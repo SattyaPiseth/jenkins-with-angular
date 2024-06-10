@@ -1,29 +1,24 @@
-# Stage 1: Build the Angular application
+# Stage 1 : Build the Angular application
 FROM node:18-alpine as builder
 
 # Set the working directory
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Copy package.json and package-lock.json first to leverage Docker cache
+COPY . /app
+
+# Copy the package.json and package-lock.json
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+# Install the dependencies and build the Angular application
+RUN npm install && npm run build
 
-# Copy the rest of the application source code
-COPY . .
-
-# Build the Angular app
-RUN npm run build --prod
-
-# Stage 2: Serve the Angular application from NGINX Server
+# Stage 2 : Serve the Angular application from Nginx Server
 FROM nginx:alpine
 
-# Copy the build output from the builder stage
-COPY --from=builder /usr/src/app/dist/first-angular /usr/share/nginx/html
+# make to sure to follow you app name in the next line
+COPY --from=builder /app/dist/first-angular/ /usr/share/nginx/html
 
-# Expose port 80
+RUN ls /usr/share/nginx/html
+
+# Expose the port 80
 EXPOSE 80
-
-# Start NGINX
-CMD ["nginx", "-g", "daemon off;"]
