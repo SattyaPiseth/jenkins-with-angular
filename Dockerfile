@@ -1,20 +1,23 @@
-# Use the latest LTS version of Node.js
-FROM node:18-alpine AS builder
+# Stage 1: Build the Angular application
+FROM node:18-alpine as build
 
-# Set working directory
+# Set the working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json
+# Copy the package.json and package-lock.json (if available)
 COPY package*.json ./
 
-# Install dependencies
+# Install the dependencies
 RUN npm install
 
-# Copy the rest of the application
+# Copy the entire project
 COPY . .
 
-# Build the Angular app
-RUN npm run build --prod
+# Build the Angular application
+RUN npm run build
+
+# Stage 2: Serve the application with Node.js
+FROM node:18-alpine as production
 
 # Set the working directory
 WORKDIR /app
@@ -22,7 +25,7 @@ WORKDIR /app
 # Copy the build output from the first stage
 COPY --from=build /app/dist /app/dist
 
-# install angular universal dependencies
+# Install Angular Universal dependencies
 RUN npm install -g @nguniversal/express-engine
 
 # Copy and install production dependencies
@@ -33,7 +36,7 @@ RUN npm install --only=production
 RUN npm cache clean --force
 
 # Expose port 4000 (or any other port your server listens to)
-EXPOSE 4200
+EXPOSE 4000
 
 # Start the Node.js server
 CMD ["node", "dist/my-angular-project/server/server.mjs"]
