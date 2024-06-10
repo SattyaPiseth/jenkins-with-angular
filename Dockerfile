@@ -1,5 +1,5 @@
 # Use the latest LTS version of Node.js
-FROM node:lts AS builder
+FROM node:18-alpine AS builder
 
 # Set working directory
 WORKDIR /app
@@ -16,14 +16,24 @@ COPY . .
 # Build the Angular app
 RUN npm run build --prod
 
-# Use NGINX to serve the Angular app in a lightweight container
-FROM nginx:alpine
+# Set the working directory
+WORKDIR /app
 
-# Copy the build files from the previous stage
-COPY --from=builder /app/dist /usr/share/nginx/html
+# Copy the build output from the first stage
+COPY --from=build /app/dist /app/dist
 
-# Expose port 80
-EXPOSE 80
+# install angular universal dependencies
+RUN npm install -g @nguniversal/express-engine
 
-# Start NGINX when the container starts
-CMD ["nginx", "-g", "daemon off;"]
+# Copy and install production dependencies
+COPY package*.json ./
+RUN npm install --only=production
+
+# Clean up npm cache to reduce the image size
+RUN npm cache clean --force
+
+# Expose port 4000 (or any other port your server listens to)
+EXPOSE 4200
+
+# Start the Node.js server
+CMD ["node", "dist/my-angular-project/server/server.mjs"]
