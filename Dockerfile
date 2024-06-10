@@ -1,42 +1,23 @@
-# Stage 1: Build the Angular application
-FROM node:18-alpine as build
-
+# Stage 1 : Build the Angular application
+FROM node:18-alpine as app
 # Set the working directory
-WORKDIR /app
+WORKDIR /usr/src/app
 
-# Copy the package.json and package-lock.json (if available)
+COPY . /usr/src/app
+
+# Copy the package.json and package-lock.json
 COPY package*.json ./
 
-# Install the dependencies
-RUN npm install
+# Install the dependencies and build the Angular app
+RUN npm install && npm run build
 
-# Copy the entire project
-COPY . .
+# Stage 2 : Serve the Angular application from Nginx Server
+FROM nginx:alpine
+# make sure follow your app name in the next line
+COPY --from=app /usr/src/app/dist/first-angular/browser /usr/share/nginx/html
 
-# Build the Angular application
-RUN npm run build
+RUN ls /usr/share/nginx/html
 
-# Stage 2: Serve the application with Node.js
-FROM node:18-alpine as production
+EXPOSE 80
 
-# Set the working directory
-WORKDIR /app
 
-# Copy the build output from the first stage
-COPY --from=build /app/dist /app/dist
-
-# Install Angular Universal dependencies
-RUN npm install -g @nguniversal/express-engine
-
-# Copy and install production dependencies
-COPY package*.json ./
-RUN npm install --only=production
-
-# Clean up npm cache to reduce the image size
-RUN npm cache clean --force
-
-# Expose port 4000 (or any other port your server listens to)
-EXPOSE 4000
-
-# Start the Node.js server
-CMD ["node", "dist/my-angular-project/server/server.mjs"]
