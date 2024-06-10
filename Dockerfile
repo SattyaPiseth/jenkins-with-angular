@@ -36,7 +36,7 @@ RUN npm install --only=production
 RUN npm cache clean --force
 
 # Expose port 4000 (or any other port your server listens to)
-EXPOSE 4200
+EXPOSE 4000
 
 # Start the Node.js server
 CMD ["node", "dist/my-angular-project/server/server.mjs"]
