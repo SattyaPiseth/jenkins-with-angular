@@ -16,7 +16,7 @@ RUN npm install && npm run build
 FROM nginx:alpine
 
 # make to sure to follow you app name in the next line
-COPY --from=builder /app/dist/first-angular/ /usr/share/nginx/html
+COPY --from=builder /app/dist/first-angular/browser /usr/share/nginx/html
 
 RUN ls /usr/share/nginx/html
 
