@@ -23,7 +23,7 @@ FROM nginx:stable-alpine
 WORKDIR /usr/share/nginx/html
 
 # Copy the built Angular files from the previous stage
-COPY --from=build /app/dist/first-angular .
+COPY --from=build /app/dist/first-angular/browser .
 
 # Optional: Copy custom NGINX configuration file
 # COPY nginx.conf /etc/nginx/nginx.conf
